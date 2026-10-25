@@ -1,8 +1,8 @@
 /* Offline helper: always tries the network first so the schedule is never stale,
    and falls back to the saved copy of the app shell when offline.
    Only same-site files are cached; live schedule data from Supabase is never cached. */
-const CACHE = "aide-shifts-v2";
-const SHELL = ["./", "index.html", "config.js", "manifest.webmanifest", "ivy-logo.png",
+const CACHE = "aide-shifts-v3";
+const SHELL = ["./", "index.html", "config.js", "manifest.webmanifest",
   "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-64.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => {}));
