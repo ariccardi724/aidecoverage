@@ -3,8 +3,8 @@
  * 2. Leave them blank to run in demo mode: changes stay in this browser only.
  */
 window.APP_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://wjctoqrenbcfnpthqckk.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_QhaJpocJ-aD172MCqPvKCA_wFp9Y_lV",
 
   CLINIC_NAME: "Ivy Rehab Bala Cynwyd North",
 
