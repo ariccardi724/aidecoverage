@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aide Shifts | Ivy Rehab Bala Cynwyd North</title>
 <meta name="theme-color" content="#62A08E">
-<link rel="icon" type="image/png" href="ivy-icon.png">
-<link rel="apple-touch-icon" href="ivy-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aide Shifts">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" href="favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
@@ -14,28 +20,21 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  color-scheme: light;
+  color-scheme: dark;
   --teal:#6FA9B6; --green:#559866;
   --grad:linear-gradient(90deg,#6FA9B6 0%,#62A08E 50%,#559866 100%);
-  --bg:#E9F1EE; --paper:#FFFFFF; --ink:#16342D; --soft:#587269; --line:#D4E3DD; --mist:#F1F7F4;
-  --deep:#2D6B4B; --deepteal:#2A6877;
-  --ok:#4E9A6B; --open:#B4690E; --openbg:#FFF3E0; --openline:#EBC38E;
-  --gap:#BE4A2F; --gapbg:#FBE7E1; --focus:#2A6877;
+  /* dark body, tinted with Ivy teal on the left fading to Ivy green on the right */
+  --bgGrad:linear-gradient(90deg,#0F242A 0%,#10261F 55%,#11261A 100%);
+  --bg:#0F2523; --paper:#163431; --ink:#E7F3EE; --soft:#A2BFB6; --line:#2B4D48; --mist:#1C3D39;
+  --deep:#8ED4A8; --deepteal:#8FCBD8;
+  --ok:#62B47F; --open:#F2B562; --openbg:#3A2E18; --openline:#6F5427;
+  --gap:#F08B6F; --gapbg:#40231B; --focus:#8FCBD8;
   --head:"Poppins","Avenir Next","Segoe UI",system-ui,sans-serif;
   --body:"Avenir Next","Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    color-scheme: dark;
-    --bg:#0F1D1A; --paper:#172926; --ink:#E4F0EB; --soft:#9DB7AE; --line:#2B433D; --mist:#1D332E;
-    --deep:#8FD3A9; --deepteal:#8CCAD8;
-    --ok:#5FB582; --open:#F0B25E; --openbg:#3A2C17; --openline:#6E5126;
-    --gap:#F08A6E; --gapbg:#3E211A; --focus:#8CCAD8;
-  }
-}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body)}
+body{background:var(--bg) var(--bgGrad) fixed;min-height:100vh;color:var(--ink);font:15px/1.45 var(--body)}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
@@ -43,6 +42,7 @@ button{cursor:pointer}
 
 /* ---------- banner ---------- */
 .banner{background:var(--grad);color:#fff;position:relative;overflow:hidden}
+.banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#8FD0DC,#8ED4A8);opacity:.9}
 .banner-in{max-width:1500px;margin:0 auto;padding:18px 24px 18px;display:flex;justify-content:space-between;align-items:center;gap:20px}
 .banner h1{margin:0;font:italic 700 34px/1.05 var(--head);letter-spacing:-.01em;text-shadow:0 1px 10px rgba(20,60,50,.18)}
 .weeknav{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
@@ -54,7 +54,7 @@ button{cursor:pointer}
 .logo{height:92px;width:auto;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(20,60,50,.18))}
 
 /* ---------- tab bar ---------- */
-.bar{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.bar{background:#122B29;border-bottom:1px solid var(--line);box-shadow:0 -3px 0 0 rgba(0,0,0,0) inset;position:sticky;top:0;z-index:20}
 .bar-in{max-width:1500px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .tabs{display:flex;gap:4px}
 .tab{border:0;background:none;padding:13px 14px 11px;font:600 15px var(--head);color:var(--soft);border-bottom:3px solid transparent}
@@ -69,7 +69,7 @@ button{cursor:pointer}
 .live.off i{background:var(--gap)}
 
 /* ---------- layout ---------- */
-main{max-width:1500px;margin:0 auto;padding:18px 24px 60px}
+main{max-width:1500px;margin:0 auto;padding:18px 24px 100px}
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .toolbar .sum{font:600 16px var(--head)}
 .toolbar .sum.warn{color:var(--open)}
@@ -148,8 +148,8 @@ main{max-width:1500px;margin:0 auto;padding:18px 24px 60px}
 @keyframes hl{from{background:color-mix(in srgb,var(--teal) 28%,transparent)}to{background:transparent}}
 
 /* ---------- identity dialog & toast ---------- */
-dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(10,40,30,.35)}
-dialog::backdrop{background:rgba(16,45,38,.55)}
+dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 32px);background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.55);border:1px solid var(--line)}
+dialog::backdrop{background:rgba(4,16,14,.72)}
 .dlg-head{background:var(--grad);color:#fff;padding:18px 20px}
 .dlg-head h2{margin:0;font:italic 700 24px var(--head)}
 .dlg-head p{margin:4px 0 0;font-size:14px;opacity:.95}
@@ -161,7 +161,7 @@ dialog::backdrop{background:rgba(16,45,38,.55)}
 .newme{display:flex;gap:8px;margin-top:14px}
 .newme input{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:9px 10px;background:var(--paper);min-width:0}
 .fine{font-size:12.5px;color:var(--soft);margin:12px 0 0}
-#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:50;max-width:90%;text-align:center;display:none}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--grad);color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:50;max-width:90%;text-align:center;display:none}
 
 @media (max-width:640px){
   .banner-in{padding:14px 16px;align-items:flex-start}
@@ -177,6 +177,20 @@ dialog::backdrop{background:rgba(16,45,38,.55)}
 }
 @media (max-width:480px){.pill-w{display:none}}
 @media (max-width:360px){.logo{height:40px}}
+
+/* ---------- install app ---------- */
+#install{position:fixed;left:16px;bottom:16px;z-index:40;display:none;align-items:center;gap:6px;background:var(--grad);color:#fff;border-radius:999px;padding:6px 6px 6px 8px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+#install.show{display:flex}
+#install img{width:30px;height:30px;border-radius:8px}
+#install .go{border:0;background:#fff;color:#2D6B4B;font-weight:800;font-size:14px;border-radius:999px;padding:8px 14px}
+#install .lbl{font:600 14px var(--head);padding:0 4px;white-space:nowrap}
+#install .no{border:0;background:none;color:#fff;font-size:20px;line-height:1;padding:4px 8px;border-radius:999px}
+#install .no:hover{background:rgba(255,255,255,.2)}
+@media (prefers-reduced-motion: no-preference){#install.show{animation:pop .35s ease-out}@keyframes pop{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}}
+.steps{margin:0;padding-left:20px;line-height:1.7}
+.steps b{color:var(--deep)}
+@media (max-width:640px){#install{left:12px;right:12px;bottom:12px;justify-content:space-between}}
+@media (display-mode: standalone){#install{display:none!important}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -680,6 +694,51 @@ api.subscribe(applyEvent,(st)=>{
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && LIVE) loadAll(); });
 render();
 loadAll();
+})();
+</script>
+<div id="install" role="region" aria-label="Install app">
+  <img src="icon-192.png" alt="">
+  <span class="lbl">Install Aide Shifts</span>
+  <button class="go" id="installGo">Install</button>
+  <button class="no" id="installNo" aria-label="Not now">&times;</button>
+</div>
+
+<dialog id="iosDlg" aria-labelledby="iosTitle">
+  <div class="dlg-head"><h2 id="iosTitle">Add to your Home Screen</h2><p>iPhone and iPad install apps from Safari's share menu.</p></div>
+  <div class="dlg-body">
+    <ol class="steps">
+      <li>Open this link in <b>Safari</b> if you're in another app or browser.</li>
+      <li>Tap the <b>Share</b> button (the square with an arrow pointing up).</li>
+      <li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+    </ol>
+    <div class="acts" style="margin-top:16px;justify-content:flex-end"><button class="btn primary" id="iosOk">Got it</button></div>
+  </div>
+</dialog>
+
+<script>
+/* Install button: appears on its own when the link is opened in a browser that can install it. */
+(function(){
+  var box=document.getElementById("install"), go=document.getElementById("installGo"), no=document.getElementById("installNo"), lbl=box.querySelector(".lbl");
+  var ios=document.getElementById("iosDlg"), evt=null;
+  var KEY="ivy_aide_shifts_install_dismissed";
+  function get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
+  function set(v){ try{ localStorage.setItem(KEY,v); }catch(e){} }
+  function standalone(){ return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone===true; }
+  function show(){ if(standalone()) return; var d=+get()||0; if(Date.now()-d<14*864e5) return; box.classList.add("show"); }
+  function hide(){ box.classList.remove("show"); }
+  window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); evt=e; show(); });
+  window.addEventListener("appinstalled",function(){ hide(); evt=null; });
+  var ua=navigator.userAgent||"", isIOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  if(isIOS && !standalone()){ lbl.textContent="Add to Home Screen"; go.textContent="How"; setTimeout(show,1200); }
+  go.onclick=function(){
+    if(evt){ evt.prompt(); evt.userChoice.then(function(c){ hide(); if(c.outcome!=="accepted") set(String(Date.now())); evt=null; }); }
+    else if(ios.showModal){ ios.showModal(); }
+  };
+  no.onclick=function(){ hide(); set(String(Date.now())); };
+  document.getElementById("iosOk").onclick=function(){ ios.close(); hide(); };
+  if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
+    window.addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+  }
 })();
 </script>
 </body>

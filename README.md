@@ -8,7 +8,8 @@ A live weekly schedule for PT aides. Pick an aide for each shift from a dropdown
 |---|---|
 | `index.html` | The whole app |
 | `config.js` | Your Supabase keys, clinic hours, and the standard week |
-| `ivy-logo.png`, `ivy-icon.png` | Logo for the banner and browser/home-screen icon |
+| `ivy-logo.png` | Logo for the top-right of the banner |
+| `manifest.webmanifest`, `sw.js`, `icon-*.png`, `apple-touch-icon.png`, `favicon-64.png` | Let the app be installed on phones and computers |
 | `supabase/schema.sql` | Creates the database and loads your team and the week of Oct 26 |
 
 Open `index.html` before setup and it runs in **demo mode**: fully working, but changes stay in that one browser.
@@ -48,6 +49,15 @@ The banner should now say **Live** with a green dot. If it says "Reconnecting", 
 - **New weeks:** an empty week offers **Add the standard shifts** (from `config.js`) or **Copy last week**.
 - **Team tab:** add aides or staff, rename, or remove someone. Removed people keep their history.
 - **Activity log:** every change with name and time, filterable by person. It can't be edited or deleted from the app.
+
+## Installing as an app
+
+When someone opens the link, an **Install Aide Shifts** button appears at the bottom of the screen.
+- **Android, Chrome or Edge on a computer:** tap **Install**. The app gets its own icon and opens in its own window.
+- **iPhone or iPad:** the button says **Add to Home Screen**. Tap **How** for the three Safari steps, since Apple doesn't allow a one-tap install.
+- Closing the button with **×** hides it for two weeks on that device. It never shows once the app is installed.
+
+Installing only works from the hosted https link (GitHub Pages), not from a file opened on your computer.
 
 ## Changing the defaults
 
