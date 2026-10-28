@@ -196,6 +196,32 @@ dialog::backdrop{background:rgba(4,16,14,.72)}
 .steps b{color:var(--deep)}
 @media (max-width:640px){#install{left:12px;right:12px;bottom:12px;justify-content:space-between}}
 @media (display-mode: standalone){#install{display:none!important}}
+/* ---------- downloads ---------- */
+.dlsec{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;background:var(--mist)}
+.dlsec h3{margin:0 0 4px;font:600 16px var(--head)}
+.dllab{display:block;font-size:13px;font-weight:700;color:var(--soft);margin-bottom:4px}
+.dlsel{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 9px;background:var(--paper);margin-bottom:10px}
+.dlbtn{width:100%}
+#printArea{display:none}
+@media print{
+  @page{size:landscape;margin:12mm}
+  html,body{background:#fff!important;color:#111!important}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important;font:11pt/1.35 "Segoe UI",system-ui,sans-serif;color:#111}
+  #printArea h1{font:700 18pt/1.1 "Poppins","Segoe UI",sans-serif;margin:0}
+  #printArea .ph{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #2C9B5A;padding-bottom:6px;margin-bottom:10px}
+  #printArea .ph p{margin:2px 0 0;color:#444}
+  #printArea table{width:100%;border-collapse:collapse;table-layout:fixed}
+  #printArea th,#printArea td{border:1px solid #9AB;padding:5px 6px;vertical-align:top;text-align:left}
+  #printArea th{background:#E6F2EC}
+  #printArea .pw td div{padding:2px 0;border-bottom:1px dotted #CCC}
+  #printArea .pw td div:last-child{border-bottom:0}
+  #printArea .po{color:#A5520A;font-weight:700}
+  #printArea .num{text-align:right;font-variant-numeric:tabular-nums}
+  #printArea .tot{font-weight:700;background:#F3F7F5}
+  #printArea h2{font:600 12pt "Segoe UI",sans-serif;margin:14px 0 6px}
+  #printArea .pf{margin-top:10px;color:#666;font-size:9pt}
+}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -258,6 +284,26 @@ dialog::backdrop{background:rgba(4,16,14,.72)}
     <p class="fine">This labels your changes. It isn't a password, and you can switch any time.</p>
   </div>
 </dialog>
+
+<dialog id="dlDlg" aria-labelledby="dlTitle">
+  <div class="dlg-head"><h2 id="dlTitle">Download</h2><p>Save the hours or the week's schedule.</p></div>
+  <div class="dlg-body">
+    <div class="dlsec">
+      <h3>Hours report</h3>
+      <p class="fine" style="margin:0 0 10px">Hours for each aide by day, with weekly totals and every shift listed. Opens in Excel or Google Sheets.</p>
+      <label class="dllab" for="dlRange">Weeks</label>
+      <select id="dlRange" class="dlsel"></select>
+      <button class="btn primary dlbtn" id="dlCsv">Download hours (.csv)</button>
+    </div>
+    <div class="dlsec">
+      <h3>Week view</h3>
+      <p class="fine" style="margin:0 0 10px">A clean one-page schedule of the week shown. In the print window, choose <b>Save as PDF</b> or print it.</p>
+      <button class="btn dlbtn" id="dlPdf">Download week view (PDF)</button>
+    </div>
+    <div class="acts" style="justify-content:flex-end;margin-top:6px"><button class="btn" id="dlClose">Close</button></div>
+  </div>
+</dialog>
+<div id="printArea" aria-hidden="true"></div>
 
 <div id="toast" role="status"></div>
 
@@ -555,7 +601,7 @@ function renderSchedule(){
     openN||gapH ? `<span class="sum warn">${openN?`${openN} open shift${openN===1?"":"s"} to fill`:""}${openN&&gapH?", ":""}${gapH?`${fmtH(gapH)} with no shift`:""}</span>`
                 : `<span class="sum good">Every clinic hour has an aide this week</span>`;
   let h=`<div class="toolbar">${sum||"<span></span>"}<div class="acts">
-      ${S.shifts.length?`<button class="btn" data-act="copy">Copy last week</button><button class="btn" data-act="clear">Clear week</button>`:""}
+      <button class="btn primary" data-act="download">&#8595; Download</button>${S.shifts.length?`<button class="btn" data-act="copy">Copy last week</button><button class="btn" data-act="clear">Clear week</button>`:""}
     </div></div>`;
   if(S.loaded && !S.shifts.length){
     h+=`<div class="banner-empty"><h2>No shifts this week yet</h2><p>Start from the clinic's usual week, or repeat last week's schedule. You can change any time or aide afterward.</p>
@@ -638,6 +684,94 @@ function render(){
   if(fk){ const el=document.querySelector(`[data-k="${fk}"]`); if(el) el.focus(); }
 }
 
+/* ---------- downloads ---------- */
+const r1 = (h)=>Math.round(h*100)/100;
+function csvCell(v){ v=String(v==null?"":v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+function saveFile(name, text, type){
+  const blob=new Blob([text],{type});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function rangeChoices(){
+  const w=S.week, s=(d)=>fmtD(d,{month:"short",day:"numeric"});
+  return [
+    ["this",`This week (${s(w)})`, w, 1],
+    ["last4",`4 weeks ending ${s(w)}`, addDays(w,-21), 4],
+    ["next4",`4 weeks starting ${s(w)}`, w, 4],
+    ["last8",`8 weeks ending ${s(w)}`, addDays(w,-49), 8],
+    ["last13",`13 weeks (a quarter) ending ${s(w)}`, addDays(w,-84), 13]
+  ];
+}
+function openDownloads(){
+  $("#dlRange").innerHTML=rangeChoices().map((r)=>`<option value="${r[0]}">${esc(r[1])}</option>`).join("");
+  const d=$("#dlDlg"); if(!d.open){ if(d.showModal) d.showModal(); else d.setAttribute("open",""); }
+}
+async function downloadHours(){
+  const r=rangeChoices().find((x)=>x[0]===$("#dlRange").value)||rangeChoices()[0];
+  const start=r[2], n=r[3], end=addDays(start,n*7-1);
+  let rows;
+  try{ rows = await api.shifts(start,end); }catch(e){ toast("Couldn't read the schedule for that period."); return; }
+  const weeks=[...Array(n)].map((_,i)=>addDays(start,i*7));
+  const ids=new Set(aides().map((a)=>a.id)); rows.forEach((s)=>{ if(s.aide_id) ids.add(s.aide_id); });
+  const people=[...ids].map((id)=>({id,name:nameOf(id)})).sort((a,b)=>a.name.localeCompare(b.name));
+  const md=(d)=>fmtD(d,{month:"numeric",day:"numeric",year:"numeric"});
+  const L=[]; const row=(...c)=>L.push(c.map(csvCell).join(","));
+  row("Aide Shifts hours report", CFG.CLINIC_NAME||"");
+  row("Period", `${fmtD(start,{month:"long",day:"numeric",year:"numeric"})} to ${fmtD(addDays(end,DAYNUMS[DAYNUMS.length-1]-7),{month:"long",day:"numeric",year:"numeric"})}`);
+  row("Created", new Date().toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})+(S.me?" by "+S.me:""));
+  row("Hours are decimal: 7.5 = 7 hours 30 minutes");
+  const grand={}; const byWeek={};
+  weeks.forEach((w)=>{
+    const days=DAYNUMS.map((d)=>addDays(w,d-1));
+    L.push(""); row(`Week of ${fmtD(w,{month:"long",day:"numeric",year:"numeric"})}`);
+    row("Aide",...days.map((d)=>fmtD(d,{weekday:"short"})+" "+fmtD(d,{month:"numeric",day:"numeric"})),"Week total","Shifts");
+    const dayTot=days.map(()=>0);
+    people.forEach((p)=>{
+      const per=days.map((d,i)=>{ const h=rows.filter((s)=>s.aide_id===p.id&&s.shift_date===d).reduce((a,s)=>a+hrs(s),0); dayTot[i]+=h; return h; });
+      const tot=per.reduce((a,b)=>a+b,0), cnt=rows.filter((s)=>s.aide_id===p.id&&days.includes(s.shift_date)).length;
+      byWeek[p.id]=byWeek[p.id]||{}; byWeek[p.id][w]=tot; grand[p.id]=(grand[p.id]||0)+tot;
+      row(p.name,...per.map(r1),r1(tot),cnt);
+    });
+    const open=days.map((d)=>rows.filter((s)=>!s.aide_id&&s.shift_date===d).reduce((a,s)=>a+hrs(s),0));
+    row("Open (unfilled)",...open.map(r1),r1(open.reduce((a,b)=>a+b,0)),rows.filter((s)=>!s.aide_id&&days.includes(s.shift_date)).length);
+    row("Day total (filled)",...dayTot.map(r1),r1(dayTot.reduce((a,b)=>a+b,0)));
+  });
+  if(n>1){
+    L.push(""); row("Summary by week");
+    row("Aide",...weeks.map((w)=>"Week of "+fmtD(w,{month:"numeric",day:"numeric"})),"Total","Average per week");
+    people.forEach((p)=>row(p.name,...weeks.map((w)=>r1((byWeek[p.id]||{})[w]||0)),r1(grand[p.id]||0),r1((grand[p.id]||0)/n)));
+  }
+  L.push(""); row("Shift detail");
+  row("Date","Day","Aide","Start","End","Hours");
+  rows.slice().sort((a,b)=>a.shift_date.localeCompare(b.shift_date)||sortShifts(a,b)).forEach((s)=>
+    row(md(s.shift_date),fmtD(s.shift_date,{weekday:"long"}),s.aide_id?nameOf(s.aide_id):"OPEN",t12long(s.start_time),t12long(s.end_time),r1(hrs(s))));
+  const fname=`aide-hours_${start}${n>1?"_to_"+addDays(end,-1):""}.csv`;
+  saveFile(fname,"\ufeff"+L.join("\r\n"),"text/csv;charset=utf-8");
+  toast("Hours report downloaded");
+}
+function printWeek(){
+  const days=weekDates(), list=(d)=>S.shifts.filter((s)=>s.shift_date===d).sort(sortShifts);
+  const ppl=aides().concat(S.team.filter((p)=>!aides().includes(p)&&S.shifts.some((s)=>s.aide_id===p.id)));
+  const cell=(d)=>list(d).map((s)=>s.aide_id?`<div><b>${esc(nameOf(s.aide_id))}</b> ${t12(s.start_time)}–${t12(s.end_time)}</div>`:`<div class="po">OPEN ${t12(s.start_time)}–${t12(s.end_time)}</div>`).join("")||"<div>—</div>";
+  const hd=(d)=>{ const h=HOURS[dow(d)]; return `${fmtD(d,{weekday:"long"})}<br><span style="font-weight:400">${fmtD(d,{month:"short",day:"numeric"})}${h?` · ${t12(h[0])}–${t12(h[1])}`:""}</span>`; };
+  let h=`<div class="ph"><div><h1>Aide Shifts</h1><p>Week of ${fmtD(S.week,{month:"long",day:"numeric"})} – ${fmtD(days[days.length-1],{month:"long",day:"numeric",year:"numeric"})}</p></div><p>${esc(CFG.CLINIC_NAME||"")}</p></div>
+    <table class="pw"><thead><tr>${days.map((d)=>`<th>${hd(d)}</th>`).join("")}</tr></thead><tbody><tr>${days.map((d)=>`<td>${cell(d)}</td>`).join("")}</tr></tbody></table>
+    <h2>Hours</h2><table><thead><tr><th style="width:18%">Aide</th>${days.map((d)=>`<th class="num">${fmtD(d,{weekday:"short"})}</th>`).join("")}<th class="num">Total</th></tr></thead><tbody>`;
+  const dayTot=days.map(()=>0);
+  ppl.forEach((p)=>{ const per=days.map((d,i)=>{ const x=S.shifts.filter((s)=>s.aide_id===p.id&&s.shift_date===d).reduce((a,s)=>a+hrs(s),0); dayTot[i]+=x; return x; });
+    h+=`<tr><td>${esc(p.name)}</td>${per.map((x)=>`<td class="num">${x?r1(x):""}</td>`).join("")}<td class="num tot">${r1(per.reduce((a,b)=>a+b,0))}</td></tr>`; });
+  h+=`<tr class="tot"><td>Total</td>${dayTot.map((x)=>`<td class="num">${r1(x)}</td>`).join("")}<td class="num">${r1(dayTot.reduce((a,b)=>a+b,0))}</td></tr></tbody></table>
+    <p class="pf">Printed ${new Date().toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}${S.me?" by "+esc(S.me):""}. Open shifts are shown in orange.</p>`;
+  $("#printArea").innerHTML=h;
+  const d=$("#dlDlg"); if(d.open) d.close();
+  const old=document.title; document.title=`Aide shifts week of ${S.week}`;
+  setTimeout(()=>{ window.print(); document.title=old; },150);
+}
+$("#dlCsv").addEventListener("click",downloadHours);
+$("#dlPdf").addEventListener("click",printWeek);
+$("#dlClose").addEventListener("click",()=>$("#dlDlg").close());
+
 /* ---------- identity ---------- */
 function openWho(){
   const ppl=S.team.filter((p)=>p.active!==false).sort((a,b)=>(a.role===b.role?0:a.role==="Aide"?-1:1)||a.name.localeCompare(b.name));
@@ -687,12 +821,13 @@ $("#main").addEventListener("change",(e)=>{
 });
 $("#main").addEventListener("click",(e)=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
-  const a=b.dataset.act; if(needMe()) return;
+  const a=b.dataset.act; if(a==="download"){ openDownloads(); return; } if(needMe()) return;
   if(a==="add") addShift(b.closest("[data-date]").dataset.date);
   else if(a==="del") deleteShift(b.closest("[data-sid]").dataset.sid);
   else if(a==="fill") fillStandard();
   else if(a==="copy") copyLastWeek();
   else if(a==="clear") clearWeek();
+  else if(a==="download") openDownloads();
   else if(a==="deactivate"){ const p=person(b.closest("[data-pid]").dataset.pid); if(p&&confirm(`Remove ${p.name} from the team? Their past shifts stay on the schedule.`)) updateMember(p.id,{active:false},`Removed ${p.name} from the team`); }
   else if(a==="restore"){ const p=person(b.closest("[data-pid]").dataset.pid); if(p) updateMember(p.id,{active:true},`Added ${p.name} back to the team`); }
 });
